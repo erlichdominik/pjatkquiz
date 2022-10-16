@@ -1,16 +1,17 @@
 package com.pjatk.pjatkquiz.quiz.dto;
 
-import com.pjatk.ddd.model.AggregateId;
+import com.pjatk.pjatkquiz.sharedkernel.ddd.model.AggregateId;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
 import java.io.Serializable;
-import java.util.UUID;
 
 import static lombok.AccessLevel.PRIVATE;
 
 @Value
 @NoArgsConstructor(access = PRIVATE, force = true)
+@RequiredArgsConstructor(staticName = "of")
 public class QuestionId implements Serializable, AggregateId {
-    UUID value;
+    long value;
 }

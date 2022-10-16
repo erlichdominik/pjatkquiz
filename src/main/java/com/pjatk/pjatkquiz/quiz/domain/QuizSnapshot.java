@@ -1,22 +1,19 @@
 package com.pjatk.pjatkquiz.quiz.domain;
 
-import com.pjatk.model.Name;
-import com.pjatk.pjatkquiz.quiz.dto.QuestionId;
-import com.pjatk.pjatkquiz.quiz.dto.QuizId;
 import lombok.Getter;
 
 import java.util.Set;
 
 @Getter
 class QuizSnapshot {
-    private QuizId id;
-    private Name quizName;
-    private Set<QuestionId> questionIds;
+    private long id;
+    private String quizName;
+    private Set<QuestionSnapshot> questions;
 
-    QuizSnapshot(QuizId id, Name quizName, Set<QuestionId> questionIds) {
+    QuizSnapshot(long id, String quizName, Set<QuestionSnapshot> questions) {
         this.id = id;
         this.quizName = quizName;
-        this.questionIds = questionIds;
+        this.questions = questions;
     }
 
     public QuizSnapshot() {}

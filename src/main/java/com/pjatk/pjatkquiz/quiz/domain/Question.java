@@ -1,14 +1,11 @@
 package com.pjatk.pjatkquiz.quiz.domain;
 
-import com.pjatk.ddd.annotations.AggregateRoot;
-import com.pjatk.model.IsCorrect;
-import com.pjatk.model.Name;
-import com.pjatk.pjatkquiz.quiz.dto.AnswerId;
-import com.pjatk.pjatkquiz.quiz.dto.QuestionId;
-import lombok.Getter;
+import com.pjatk.pjatkquiz.sharedkernel.ddd.annotations.AggregateRoot;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,24 +15,16 @@ import static lombok.AccessLevel.PROTECTED;
 @Entity
 @NoArgsConstructor(access = PROTECTED)
 class Question {
-    @Getter
-    @EmbeddedId
-    @AttributeOverride(name = "value", column = @Column(name = "id"))
-    private QuestionId id;
-
-    @AttributeOverride(name = "value", column = @Column(name = "quiz_name"))
-    private Name quizName;
-
-    @OneToOne
-    @JoinColumn(name = "next_question_id")
-    private Question nextQuestion;
-
+    @Id
+    @GeneratedValue
+    private long id;
+    private String questionName;
     @OneToMany
     @JoinColumn(name = "answer_id")
-    private Set<Answer> answers;
+    private Set<Answer> answers = new HashSet<>();
 
     static Question restore(QuestionSnapshot snapshot) {
-        return new Question(snapshot.getQuestionId(), snapshot.getQuizName(), Question.restore(snapshot.getNextQuestion()),
+        return new Question(snapshot.getQuestionId(), snapshot.getQuizName(),
                 snapshot.getAnswers()
                         .stream()
                         .map(Answer::restore)
@@ -43,43 +32,50 @@ class Question {
     }
 
     QuestionSnapshot getSnapshot() {
-        return new QuestionSnapshot(id, quizName, nextQuestion.getSnapshot(), answers
+        return new QuestionSnapshot(id, questionName, answers
                 .stream()
                 .map(Answer::getSnapshot)
                 .collect(Collectors.toSet()));
     }
 
-    Question(QuestionId id, Name quizName, Question nextQuestion, Set<Answer> answers) {
+    Question(long id, String questionName, Set<Answer> answers) {
         this.id = id;
-        this.quizName = quizName;
-        this.nextQuestion = nextQuestion;
+        this.questionName = questionName;
         this.answers = answers;
+    }
+
+    public Question(String questionName) {
+        this.questionName = questionName;
+    }
+
+    void addAnswers(Collection<Answer> answers) {
+        this.answers.addAll(answers);
     }
 
     @Entity
     @NoArgsConstructor(access = PROTECTED)
     static class Answer {
-        @Getter
-        @AttributeOverride(name = "value", column = @Column(name = "id"))
-        @EmbeddedId
-        private AnswerId id;
-
-        @AttributeOverride(name = "value", column = @Column(name = "name"))
-        private Name name;
-
-        @AttributeOverride(name = "value", column = @Column(name = "is_correct"))
-        private IsCorrect isCorrect;
+        @Id
+        @GeneratedValue
+        private long id;
+        private String name;
+        private boolean isCorrect;
 
         static Answer restore(AnswerSnapshot snapshot) {
-            return new Answer(snapshot.getId(), snapshot.getName(), snapshot.getIsCorrect());
+            return new Answer(snapshot.getId(), snapshot.getName(), snapshot.isCorrect());
         }
 
         AnswerSnapshot getSnapshot() {
             return new AnswerSnapshot(id, name, isCorrect);
         }
 
-        private Answer(AnswerId id, Name name, IsCorrect isCorrect) {
+        private Answer(long id, String name, boolean isCorrect) {
             this.id = id;
+            this.name = name;
+            this.isCorrect = isCorrect;
+        }
+
+        public Answer(String name, boolean isCorrect) {
             this.name = name;
             this.isCorrect = isCorrect;
         }

@@ -1,4 +1,4 @@
-package com.pjatk.ddd.annotations;
+package com.pjatk.pjatkquiz.sharedkernel.ddd.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;

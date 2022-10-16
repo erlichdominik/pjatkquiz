@@ -1,48 +1,39 @@
 package com.pjatk.pjatkquiz.quiz.domain;
 
-import com.pjatk.pjatkquiz.quiz.dto.AnswerDto;
-import com.pjatk.pjatkquiz.quiz.dto.QuestionDto;
-import com.pjatk.pjatkquiz.quiz.dto.QuestionId;
-import com.pjatk.pjatkquiz.quiz.dto.QuestionNotFoundException;
+import com.pjatk.pjatkquiz.quiz.command.AddQuestionToQuizCommand;
+import com.pjatk.pjatkquiz.quiz.command.CreateQuizCommand;
+import com.pjatk.pjatkquiz.quiz.domain.Question.Answer;
+import com.pjatk.pjatkquiz.quiz.dto.*;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class QuizFacade {
     private final QuizRepository quizRepository;
-    private final QuestionRepository questionRepository;
 
-    public QuestionDto fetchQuestion(QuestionId questionId) {
-        return questionRepository
-                .findById(questionId)
-                .map(this::mapQuestionToDto)
-                .orElseThrow(() -> new QuestionNotFoundException(questionId));
+    public long createQuiz(CreateQuizCommand command) {
+        var quiz = new Quiz(command.quizName());
+
+        return quizRepository.save(quiz).getSnapshot().getId();
     }
 
-    public QuestionDto fetchNextQuestion(QuestionId currentQuestionId) {
-        QuestionSnapshot questionSnapshot = questionRepository
-                .findById(currentQuestionId)
-                .map(Question::getSnapshot)
-                .orElseThrow(() -> new QuestionNotFoundException(currentQuestionId));
+    public long addQuestionToQuiz(AddQuestionToQuizCommand command) {
 
-        return questionRepository
-                .findById(questionSnapshot.getNextQuestion().getQuestionId())
-                .map(this::mapQuestionToDto)
-                .orElseThrow(() -> new QuestionNotFoundException(questionSnapshot.getNextQuestion().getQuestionId()));
+        Quiz managedQuiz = quizRepository.findById(command.quizId()).orElseThrow(() -> new QuizNotFoundException(command.quizId()));
+
+        var question = new Question(command.questionName());
+
+        Set<Answer> answers = command.answers().stream()
+                .map(it -> new Answer(it.name(), it.isCorrect()))
+                .collect(Collectors.toSet());
+
+        question.addAnswers(answers);
+        managedQuiz.addQuestion(question);
+
+        return quizRepository.save(managedQuiz).getSnapshot().getId();
     }
 
-
-    private QuestionDto mapQuestionToDto(Question question) {
-        QuestionSnapshot questionSnapshot = question.getSnapshot();
-
-        return new QuestionDto(questionSnapshot.getQuestionId(), questionSnapshot.getQuizName(), questionSnapshot.getAnswers().stream().map(this::mapAnswerToDto)
-                .collect(Collectors.toSet()));
-    }
-
-    private AnswerDto mapAnswerToDto(AnswerSnapshot snapshot) {
-
-        return new AnswerDto(snapshot.getId(), snapshot.getName(), snapshot.getIsCorrect());
-    }
 
 }

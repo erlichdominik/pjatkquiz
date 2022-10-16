@@ -1,4 +1,4 @@
-package com.pjatk.ddd.model;
+package com.pjatk.pjatkquiz.sharedkernel.ddd.model;
 
 import java.util.UUID;
 

@@ -1,11 +1,11 @@
 package com.pjatk.pjatkquiz.quiz.domain;
 
-import com.pjatk.pjatkquiz.quiz.dto.QuizId;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.Repository;
 
 import java.util.Optional;
-import java.util.UUID;
 
-interface QuizRepository extends JpaRepository<Quiz, UUID> {
-    Optional<Quiz> findById(QuizId id);
+interface QuizRepository extends Repository<Quiz, Long> {
+    Optional<Quiz> findById(long id);
+    Optional<Quiz> findByQuizName(String quizName);
+    Quiz save(Quiz quiz);
 }
